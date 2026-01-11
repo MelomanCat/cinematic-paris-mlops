@@ -1,0 +1,52 @@
+name: Cinematic Paris CI/CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install deps
+      run: pip install -r requirements.txt
+
+    - name: Run tests
+      run: pytest -v
+
+    # --- CD (runs only if tests passed)
+    - name: Configure AWS
+      run: |
+        echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+        echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+        echo "AWS_DEFAULT_REGION=${{ secrets.AWS_DEFAULT_REGION }}" >> $GITHUB_ENV
+
+    - name: Build inference API
+      run: docker build -t cinematic-inference ./inference_api
+
+    - name: Smoke test inference API
+      run: |
+        docker run -d -p 7860:7860 cinematic-inference
+        sleep 15
+        curl http://localhost:7860/health
+        docker stop inference-test
+
+    - name: Login to HuggingFace
+      run: huggingface-cli login --token ${{ secrets.HF_TOKEN }}
+
+    - name: Push to HF Space
+      run: |
+        huggingface-cli repo clone jedha0padavan/cinematic-inference
+        cp -r inference_api/* cinematic-inference/
+        cd cinematic-inference
+        git add .
+        git commit -m "Auto deploy new Production model"
+        git push
