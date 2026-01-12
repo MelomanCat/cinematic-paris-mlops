@@ -62,7 +62,7 @@ GET /zones
 Returns the latest cinematic zones as circles.
 
 Response example:
-
+```text
 {
   "run_id": "b3a91f...",
   "created_at_utc": "2026-01-12T10:43:21Z",
@@ -88,23 +88,23 @@ Response example:
     }
   ]
 }
-
+```
 This endpoint is used by the visualization layer to draw cinematic zones on a map.
 
----------------------------------------------------------------------------------
 
 POST /predict
 
 Checks whether a given location is inside a cinematic hotspot.
 
 Request:
+```text
 {
   "lat": 48.86,
   "lon": 2.35
 }
-
+```
 Response example:
-
+```text
 {
   "is_hotspot": true,
   "nearest_cluster": 0,
@@ -112,7 +112,7 @@ Response example:
   "zone_radius_m": 180.4,
   "run_id": "b3a91f..."
 }
-
+```
 Logic:
 
 The API finds the nearest cinematic zone (centroid).
