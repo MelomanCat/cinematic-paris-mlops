@@ -34,7 +34,7 @@ jobs:
 
     - name: Smoke test inference API
       run: |
-        docker run -d -p 7860:7860 cinematic-inference
+        docker run -d --name inference-test -p 7860:7860 cinematic-inference
         sleep 15
         curl http://localhost:7860/health
         docker stop inference-test
