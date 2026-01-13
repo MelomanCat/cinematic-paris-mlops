@@ -35,11 +35,35 @@ jobs:
       run: docker build -t cinematic-inference ./inference_api
 
     - name: Smoke test inference API
-      run: |
-        docker run -d --name inference-test -p 7860:7860 cinematic-inference
-        sleep 15
-        curl http://localhost:7860/health
-        docker stop inference-test
+  run: |
+    docker run -d --name inference-test -p 7860:7860 \
+      -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+      -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
+      -e AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION}" \
+      cinematic-inference
+
+    READY=0
+    for i in {1..30}; do
+      if curl -fsS http://localhost:7860/health > /dev/null; then
+        echo "API is up!"
+        READY=1
+        break
+      fi
+      echo "Waiting for API... ($i/30)"
+      sleep 2
+    done
+
+    echo "---- container logs ----"
+    docker logs inference-test || true
+    echo "------------------------"
+
+    docker stop inference-test || true
+    docker rm inference-test || true
+
+    if [ "$READY" -ne 1 ]; then
+      echo "API did not start in time ❌"
+      exit 1
+    fi
 
     - name: Login to HuggingFace
       run: huggingface-cli login --token ${{ secrets.HF_TOKEN }}
