@@ -75,16 +75,16 @@ jobs:
         which hf || true
 
     - name: Login to HuggingFace
-      run: hf auth login --token "${{ secrets.HF_TOKEN }}"
+      run: hf auth login --token "${{ secrets.HF_TOKEN }}" --add-to-git-credential
 
     - name: Push to HF Space
       run: |
         rm -rf cinematic-inference
-        hf repo clone jedha0padavan/cinematic-inference
+        git clone https://huggingface.co/spaces/jedha0padavan/cinematic-inference cinematic-inference
 
-        cp -r inference_api/* cinematic-inference/
+        rsync -av --delete inference_api/ cinematic-inference/
+
         cd cinematic-inference
-
         git add .
         git config user.email "actions@github.com"
         git config user.name "github-actions"
