@@ -3,3 +3,5 @@ uvicorn
 mlflow
 numpy
 scikit-learn
+boto3
+pydantic
