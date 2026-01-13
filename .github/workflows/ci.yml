@@ -79,15 +79,17 @@ jobs:
 
     - name: Push to HF Space
       run: |
+        set -e
+
         rm -rf cinematic-inference
         git clone https://huggingface.co/spaces/jedha0padavan/cinematic-inference cinematic-inference
 
         rsync -av --delete inference_api/ cinematic-inference/
 
-        cd cinematic-inference
-        git add .
-        git config user.email "actions@github.com"
-        git config user.name "github-actions"
+        git -C cinematic-inference status
+        git -C cinematic-inference add .
+        git -C cinematic-inference config user.email "actions@github.com"
+        git -C cinematic-inference config user.name "github-actions"
 
-        git commit -m "Auto deploy new Production model" || echo "No changes to commit"
-        git push
+        git -C cinematic-inference commit -m "Auto deploy new Production model" || echo "No changes to commit"
+        git -C cinematic-inference push
