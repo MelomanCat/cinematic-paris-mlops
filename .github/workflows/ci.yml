@@ -75,18 +75,19 @@ jobs:
         which hf || true
 
     - name: Login to HuggingFace
-      run: |
-        if command -v huggingface-cli >/dev/null 2>&1; then
-          huggingface-cli login --token "${{ secrets.HF_TOKEN }}"
-        else
-          hf auth login --token "${{ secrets.HF_TOKEN }}"
-        fi
+      run: hf auth login --token "${{ secrets.HF_TOKEN }}"
 
     - name: Push to HF Space
       run: |
-        huggingface-cli repo clone jedha0padavan/cinematic-inference
+        rm -rf cinematic-inference
+        hf repo clone jedha0padavan/cinematic-inference
+
         cp -r inference_api/* cinematic-inference/
         cd cinematic-inference
+
         git add .
-        git commit -m "Auto deploy new Production model"
+        git config user.email "actions@github.com"
+        git config user.name "github-actions"
+
+        git commit -m "Auto deploy new Production model" || echo "No changes to commit"
         git push
