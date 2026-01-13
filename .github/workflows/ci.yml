@@ -77,14 +77,14 @@ jobs:
     - name: Login to HuggingFace
       run: hf auth login --token "${{ secrets.HF_TOKEN }}" --add-to-git-credential
 
-    - name: Clone HF Space
+    - name: Clone HF Space (fresh)
       run: |
-        rm -rf cinematic-inference
-        git clone https://huggingface.co/spaces/jedha0padavan/cinematic-inference cinematic-inference
-        rsync -av --delete inference_api/ cinematic-inference/
+        rm -rf hf-space
+        git clone https://huggingface.co/spaces/jedha0padavan/cinematic-inference hf-space
+        rsync -av --delete inference_api/ hf-space/
 
     - name: Commit & push to HF Space
-      working-directory: cinematic-inference
+      working-directory: hf-space
       run: |
         set -euxo pipefail
         pwd
