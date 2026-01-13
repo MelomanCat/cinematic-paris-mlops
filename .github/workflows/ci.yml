@@ -20,7 +20,9 @@ jobs:
       run: pip install -r requirements.txt
 
     - name: Run tests
-      run: pytest -v
+      run: |
+        export PYTHONPATH="$GITHUB_WORKSPACE"
+        pytest -v
 
     # --- CD (runs only if tests passed)
     - name: Configure AWS
