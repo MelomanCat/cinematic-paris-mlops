@@ -83,17 +83,25 @@ jobs:
         git clone https://huggingface.co/spaces/jedha0padavan/cinematic-inference hf-space
         rsync -av --delete inference_api/ hf-space/
 
+    # --- Push with changing origin to HF space beforehand
     - name: Commit & push to HF Space
       working-directory: hf-space
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
       run: |
         set -euxo pipefail
         pwd
         git remote -v
-        git status
+     
+        git remote remove origin || true
+        git remote add origin https://jedha0padavan:${HF_TOKEN}@huggingface.co/spaces/jedha0padavan/cinematic-inference
 
+        git remote -v
+
+        git status
         git add .
         git config user.email "actions@github.com"
         git config user.name "github-actions"
-
         git commit -m "Auto deploy new Production model" || echo "No changes to commit"
-        git push
+
+        git push origin main
