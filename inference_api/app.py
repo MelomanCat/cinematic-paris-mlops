@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 import boto3, os, json
 import numpy as np
@@ -56,13 +56,10 @@ def get_zones_payload():
         _zones_payload = load_latest_zones()
     return _zones_payload
 
-@app.get("/", response_class=HTMLResponse)
-async def root():
-    return """
-    <h1>Cinematic Inference API</h1>
-    <p>🚀 API ready! Documentation: <a href="/docs">/docs</a></p>
-    <p>FastAPI automatic docs: <a href="/docs">Swagger UI</a></p>
-    """
+# Redirect root endpoint to /docs
+@app.get("/")
+def root():
+    return RedirectResponse(url="/docs")
 
 @app.get("/health")
 def health():
