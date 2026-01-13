@@ -104,4 +104,4 @@ jobs:
         git config user.name "github-actions"
         git commit -m "Auto deploy new Production model" || echo "No changes to commit"
 
-        git push origin main
+        git push origin main --force
