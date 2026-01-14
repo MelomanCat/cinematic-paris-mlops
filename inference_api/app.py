@@ -83,6 +83,19 @@ def zones():
         "zones": payload.get("zones", []),
     }
 
+@app.get("/zones/by_key")
+def zones_by_key(key: str):
+    s3 = boto3.client("s3")
+    local = os.path.join(TMP_DIR, "selected_zones.json")
+    s3.download_file(S3_BUCKET, key, local)
+
+    with open(local, "r", encoding="utf-8") as f:
+        payload = json.load(f)
+
+    payload["_s3_key"] = key
+    return payload
+
+
 @app.post("/predict")
 def predict(loc: Location):
     payload = get_zones_payload()
