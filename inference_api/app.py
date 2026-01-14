@@ -3,6 +3,7 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 import boto3, os, json
 import numpy as np
+import time
 
 S3_BUCKET = os.getenv("S3_BUCKET", "jedha-lead-bucket")
 ZONES_PREFIX = os.getenv("ZONES_PREFIX", "models/zones/")
@@ -17,6 +18,8 @@ class Location(BaseModel):
     lon: float
 
 _zones_payload = None
+_zones_loaded_at = 0
+ZONES_TTL_SECONDS = int(os.getenv("ZONES_TTL_SECONDS", "600"))  # 10 min
 
 def haversine_m(lat1, lon1, lat2, lon2):
     lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])
@@ -50,10 +53,14 @@ def load_latest_zones():
     payload["_s3_key"] = latest_key
     return payload
 
-def get_zones_payload():
-    global _zones_payload
-    if _zones_payload is None:
+def get_zones_payload(force: bool = False):
+    global _zones_payload, _zones_loaded_at
+    now = time.time()
+
+    if force or _zones_payload is None or (now - _zones_loaded_at) > ZONES_TTL_SECONDS:
         _zones_payload = load_latest_zones()
+        _zones_loaded_at = now
+
     return _zones_payload
 
 # Redirect root endpoint to /docs
